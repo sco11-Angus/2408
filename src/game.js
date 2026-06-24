@@ -1,7 +1,7 @@
 /**
  * @file game.js — 2048 游戏核心逻辑
  * @author 成员A
- * @version 2.0.0
+ * @version 1.1.0
  */
 
 // ============ 游戏状态 ============
@@ -18,11 +18,34 @@ let bestScore = parseInt(localStorage.getItem('bestTile2048')) || 0;
 /** @type {number} 棋盘边长 */
 let size = 4;
 
-/** @type {{board: number[][], score: number} | null} 上一步快照（支持撤销） */
+/**
+ * 撤销栈（支持多步撤销）
+ * @type {{board: number[][], score: number}[]}
+ */
+let undoStack = [];
+
+/** @type {{board: number[][], score: number} | null} 上一步快照（兼容旧版） */
 let lastSnapshot = null;
 
 /** @type {number} 累计消除次数（用于破纪录特效） */
 let mergeCount = 0;
+
+// ============ 模式与训练数据 ============
+
+/** @type {object|null} 当前训练模式配置 */
+let currentMode = null;
+
+/** @type {object} 训练数据记录 */
+let trainingData = {};
+
+/** @type {number|null} ADHD计时器ID */
+let timerInterval = null;
+
+/** @type {number} ADHD剩余时间（秒） */
+let remainingTime = 0;
+
+/** @type {number} 游戏开始时间戳 */
+let gameStartTime = 0;
 
 // ============ 音效（Web Audio API） ============
 
@@ -60,18 +83,118 @@ function playMergeSound(value) {
     playBeep(freq, 0.12, 'triangle');
 }
 
+// ============ ADHD 计时器 ============
+
+/**
+ * 启动ADHD模式倒计时
+ * @param {number} seconds - 倒计时秒数
+ */
+function startTimer(seconds) {
+    stopTimer();
+    remainingTime = seconds;
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+        remainingTime--;
+        updateTimerDisplay();
+        if (remainingTime <= 0) {
+            stopTimer();
+            onTrainingComplete();
+        }
+    }, 1000);
+}
+
+/**
+ * 停止计时器
+ */
+function stopTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+
+/**
+ * 更新计时器显示
+ */
+function updateTimerDisplay() {
+    const el = document.getElementById('timer-value');
+    if (!el) return;
+    const min = Math.floor(remainingTime / 60);
+    const sec = remainingTime % 60;
+    el.textContent = String(min).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+
+    // 最后60秒变红警告
+    if (remainingTime <= 60) {
+        el.style.color = '#e74c3c';
+    } else {
+        el.style.color = '#776e65';
+    }
+}
+
+/**
+ * ADHD训练完成回调
+ */
+function onTrainingComplete() {
+    trainingData.duration = Math.floor((Date.now() - gameStartTime) / 1000);
+    trainingData.score = score;
+    trainingData.maxTile = getMaxTile();
+    trainingData.mode = 'adhd';
+
+    // 弹出训练结束提示
+    const msgHtml = `
+        <div>🏆 训练结束</div>
+        <div style="font-size:18px;font-weight:normal;margin-top:8px;">本次专注训练已完成</div>
+        <div style="font-size:14px;font-weight:normal;margin-top:6px;">
+            最大数字: ${trainingData.maxTile} | 得分: ${trainingData.score}
+        </div>
+        <div style="display:flex;gap:10px;margin-top:15px;">
+            <button onclick="window.game.initBoard(${size}, window.game.getCurrentMode());hideMessage();">重新开始</button>
+            <button onclick="backToModeSelector();hideMessage();">返回首页</button>
+        </div>`;
+    showMessage(msgHtml, true);
+}
+
 // ============ 核心函数 ============
 
 /**
  * 初始化棋盘，随机生成2个方块
  * @param {number} [newSize=4] - 棋盘边长
+ * @param {object} [mode=null] - 训练模式配置
  */
-function initBoard(newSize = 4) {
+function initBoard(newSize = 4, mode = null) {
     size = newSize;
     board = Array.from({ length: size }, () => Array(size).fill(0));
     score = 0;
+    undoStack = [];
     lastSnapshot = null;
     mergeCount = 0;
+
+    // 设置模式（兼容测试环境无 GAME_MODES 的情况）
+    const defaultMode = (typeof window !== 'undefined' && window.GAME_MODES)
+        ? window.GAME_MODES.normal
+        : { id: 'normal', name: '普通模式', boardSize: 4, undoLimit: Infinity };
+    currentMode = mode || defaultMode;
+
+    // 初始化训练数据
+    trainingData = {
+        mode: currentMode.id,
+        score: 0,
+        maxTile: 0,
+        duration: 0
+    };
+    gameStartTime = Date.now();
+
+    // ADHD模式启动计时器
+    if (currentMode.id === 'adhd' && currentMode.targetTime) {
+        startTimer(currentMode.targetTime);
+    } else {
+        stopTimer();
+    }
+
+    // 更新棋盘大小按钮状态
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('size-' + newSize)?.classList.add('active');
+
     updateScoreDisplay();
     hideMessage();
     spawnTile();
@@ -80,10 +203,10 @@ function initBoard(newSize = 4) {
 }
 
 /**
- * 开始新游戏（默认4x4）
+ * 开始新游戏（保持当前模式）
  */
 function newGame() {
-    initBoard(size);
+    initBoard(size, currentMode);
 }
 
 /**
@@ -91,9 +214,7 @@ function newGame() {
  * @param {number} newSize - 新的棋盘边长 (3/4/5)
  */
 function setBoardSize(newSize) {
-    initBoard(newSize);
-    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('size-' + newSize)?.classList.add('active');
+    initBoard(newSize, currentMode);
 }
 
 /**
@@ -199,16 +320,18 @@ function moveDown() {
     return moved;
 }
 
-// ============ 撤销功能 ============
+// ============ 撤销功能（多步撤销） ============
 
 /**
- * 保存当前棋盘快照（用于撤销）
+ * 保存当前棋盘快照到撤销栈
  */
 function snapshotBoard() {
-    lastSnapshot = {
+    const snap = {
         board: board.map(row => [...row]),
         score: score
     };
+    undoStack.push(snap);
+    lastSnapshot = snap; // 保持向后兼容
 }
 
 /**
@@ -216,11 +339,12 @@ function snapshotBoard() {
  * @returns {boolean} 是否成功撤销
  */
 function undoMove() {
-    if (!lastSnapshot) return false;
-    board = lastSnapshot.board.map(row => [...row]);
-    score = lastSnapshot.score;
+    if (undoStack.length === 0) return false;
+    const snap = undoStack.pop();
+    board = snap.board.map(row => [...row]);
+    score = snap.score;
+    lastSnapshot = undoStack.length > 0 ? undoStack[undoStack.length - 1] : null;
     updateScoreDisplay();
-    lastSnapshot = null;
     playBeep(330, 0.1, 'square');
     return true;
 }
@@ -283,16 +407,29 @@ function doMove(dir) {
         case 'down':  moved = moveDown();  break;
     }
     if (moved) {
-        if (lastSnapshot && lastSnapshot.board.every((row, r) => row.every((v, c) => v === board[r][c]))) {
-            lastSnapshot = null; // 移动无效，丢弃快照
+        // 检查棋盘是否实际变化，未变化则丢弃快照
+        const snap = undoStack[undoStack.length - 1];
+        if (snap && snap.board.every((row, r) => row.every((v, c) => v === board[r][c]))) {
+            undoStack.pop();
+            lastSnapshot = undoStack.length > 0 ? undoStack[undoStack.length - 1] : null;
         }
         spawnTile();
         renderBoard();
         updateScoreDisplay();
         if (checkWin()) showMessage('🎉 你赢了！', true);
-        else if (checkLose()) showMessage('😵 游戏结束', false);
+        else if (checkLose()) {
+            const loseHtml = `
+                <div>😵 游戏结束</div>
+                <div style="font-size:14px;font-weight:normal;margin-top:6px;">
+                    最终得分: ${score}
+                </div>
+                <button onclick="window.game.newGame();hideMessage();">再来一局</button>`;
+            showMessage(loseHtml, false);
+        }
     } else {
-        lastSnapshot = null; // 无有效移动
+        // 无有效移动，丢弃快照
+        undoStack.pop();
+        lastSnapshot = undoStack.length > 0 ? undoStack[undoStack.length - 1] : null;
     }
 }
 
@@ -309,12 +446,14 @@ function updateScoreDisplay() {
         document.getElementById('best').textContent = bestScore;
         // 破纪录特效：闪金色
         const bestBox = document.getElementById('best').parentElement;
-        bestBox.classList.add('best-new');
-        setTimeout(() => bestBox.classList.remove('best-new'), 800);
+        if (bestBox) {
+            bestBox.classList.add('best-new');
+            setTimeout(() => bestBox.classList.remove('best-new'), 800);
+        }
         playBeep(880, 0.2, 'sine');
     }
     const bestEl = document.getElementById('best');
-    if (bestEl.textContent === '0') {
+    if (bestEl && bestEl.textContent === '0') {
         bestEl.textContent = bestScore;
     }
 }
@@ -335,6 +474,25 @@ function getBoardSize() {
     return size;
 }
 
+/**
+ * 获取当前模式配置
+ * @returns {object|null}
+ */
+function getCurrentMode() {
+    return currentMode;
+}
+
+/**
+ * 获取训练数据
+ * @returns {object}
+ */
+function getTrainingData() {
+    trainingData.duration = Math.floor((Date.now() - gameStartTime) / 1000);
+    trainingData.score = score;
+    trainingData.maxTile = getMaxTile();
+    return trainingData;
+}
+
 // ============ 暴露到全局 ============
 window.game = {
     initBoard,
@@ -353,7 +511,10 @@ window.game = {
     getBoardSize,
     getScore,
     getMaxTile,
+    getCurrentMode,
+    getTrainingData,
     updateScoreDisplay,
+    stopTimer,
     get board() { return board; },
     get bestScore() { return bestScore; }
 };

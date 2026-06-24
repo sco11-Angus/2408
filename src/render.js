@@ -1,7 +1,7 @@
 /**
  * @file render.js — 2048 游戏渲染模块
  * @author 成员A
- * @version 2.0.0
+ * @version 1.1.0
  */
 
 /**
@@ -38,13 +38,19 @@ function renderBoard() {
 }
 
 /**
- * 显示游戏结束 / 胜利消息
- * @param {string} msg - 消息文本（支持HTML）
- * @param {boolean} isWin - 是否为胜利（影响样式）
+ * 显示游戏结束 / 胜利 / 训练完成消息
+ * @param {string} msg - 消息HTML文本
+ * @param {boolean} [isWin=false] - 是否为胜利（影响样式）
+ * @param {boolean} [autoButton=true] - 是否自动添加"再来一局"按钮
  */
-function showMessage(msg, isWin = false) {
+function showMessage(msg, isWin = false, autoButton = false) {
     const el = document.getElementById('message');
-    el.innerHTML = msg + '<br><button onclick="window.game.newGame()">再来一局</button>';
+    let html = msg;
+    // 仅在消息不含按钮且需要自动添加时追加
+    if (autoButton && !msg.includes('<button')) {
+        html += '<br><button onclick="window.game.newGame();hideMessage();">再来一局</button>';
+    }
+    el.innerHTML = html;
     el.className = isWin ? 'message show win' : 'message show lose';
 }
 

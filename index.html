@@ -3,25 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2048 — AI驱动的开源游戏</title>
+    <title>AI-2048 — 认知训练平台</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+
+    <!-- ========== 模式选择页 ========== -->
+    <div class="container" id="mode-selector">
+        <!-- 由 modeSelector.js 动态渲染 -->
+    </div>
+
+    <!-- ========== 游戏区域（初始隐藏） ========== -->
+    <div class="container" id="game-area" style="display:none;">
 
         <!-- 头部 -->
         <div class="header">
             <div class="title">2048</div>
-            <div class="score-box">
-                <div class="score-label">最大数字</div>
-                <div class="score-value" id="best">0</div>
+            <div class="scores">
+                <div class="score-box">
+                    <div class="score-label">最大数字</div>
+                    <div class="score-value" id="best">0</div>
+                </div>
+                <div class="score-box">
+                    <div class="score-label">当前得分</div>
+                    <div class="score-value" id="current-score">0</div>
+                </div>
             </div>
+        </div>
+
+        <!-- ADHD计时器 -->
+        <div class="timer-display" id="timer-display" style="display:none;">
+            <span class="timer-label">⏱ 训练剩余时间</span>
+            <span class="timer-value" id="timer-value">10:00</span>
         </div>
 
         <!-- 操作按钮 -->
         <div class="btn-group">
             <button class="btn" onclick="window.game.newGame()">🔄 新游戏</button>
             <button class="btn btn-undo" onclick="window.game.undoMove(); renderBoard();">↩ 撤销</button>
+            <button class="btn btn-back" onclick="backToModeSelector()">🏠 返回首页</button>
         </div>
 
         <!-- 棋盘大小选择 -->
@@ -47,15 +67,15 @@
     </div>
 
     <!-- JS 模块（按顺序加载） -->
+    <script src="src/modes.js"></script>
     <script src="src/game.js"></script>
     <script src="src/render.js"></script>
+    <script src="src/modeSelector.js"></script>
     <script src="src/input.js"></script>
 
-    <!-- 启动游戏 -->
+    <!-- 启动：显示模式选择页 -->
     <script>
-        window.game.initBoard(4);
-        renderBoard();
-        window.game.updateScoreDisplay();
+        renderModeSelector();
     </script>
 </body>
 </html>
