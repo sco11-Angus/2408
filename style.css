@@ -1,8 +1,126 @@
 /**
- * 2048 游戏样式
+ * 2048 游戏样式 — 支持深色/浅色模式
  * @author 成员A
- * @version 1.1.0
+ * @version 1.3.0
  */
+
+/* ============ CSS 变量 — 浅色（默认） ============ */
+:root {
+    --bg: #faf8ef;
+    --text: #776e65;
+    --text-secondary: #999;
+    --title-color: #776e65;
+    --board-bg: #bbada0;
+    --cell-empty: rgba(238, 228, 218, 0.35);
+    --cell-empty-dark: rgba(238, 228, 218, 0.12);
+
+    --btn-bg: #8f7a66;
+    --btn-hover: #9f8a76;
+    --btn-text: #ffffff;
+    --btn-undo: #bbada0;
+    --btn-undo-hover: #ccbcb0;
+    --btn-back: #a08070;
+    --btn-back-hover: #b09080;
+    --btn-size: #bbada0;
+    --btn-size-text: rgba(255,255,255,0.6);
+    --btn-size-hover: #9f8a76;
+    --btn-size-active: #8f7a66;
+
+    --score-bg: #bbada0;
+    --score-text: #ffffff;
+
+    --timer-bg: #eee4da;
+    --timer-text: #776e65;
+
+    --kbd-bg: #8f7a66;
+    --kbd-text: #f9f6f2;
+
+    --msg-overlay: rgba(238, 228, 218, 0.73);
+    --msg-text: #776e65;
+    --msg-win-bg: rgba(237, 194, 46, 0.5);
+    --msg-win-text: #f9f6f2;
+
+    --mode-card-bg: #ffffff;
+    --mode-card-shadow: rgba(0,0,0,0.06);
+    --mode-card-hover-shadow: rgba(0,0,0,0.1);
+
+    --report-overlay-bg: rgba(0, 0, 0, 0.45);
+    --report-modal-bg: #faf8ef;
+    --report-modal-shadow: rgba(0,0,0,0.18);
+    --report-title: #776e65;
+    --report-section-title: #8f7a66;
+    --report-divider: #d6cdc4;
+    --report-stat-bg: #eee4da;
+    --report-stat-label: #999;
+    --report-stat-value: #776e65;
+    --report-summary-text: #776e65;
+    --report-encourage-bg: #f9f6f2;
+    --report-encourage-text: #8f7a66;
+    --report-suggestion-text: #776e65;
+
+    --toggle-bg: #eee4da;
+    --toggle-icon: #776e65;
+
+    --transition-speed: 0.3s;
+}
+
+/* ============ CSS 变量 — 深色 ============ */
+[data-theme="dark"] {
+    --bg: #1a1a2e;
+    --text: #d4d4e8;
+    --text-secondary: #8888aa;
+    --title-color: #e8e8f8;
+    --board-bg: #2d2d52;
+    --cell-empty: rgba(200, 200, 230, 0.08);
+    --cell-empty-dark: rgba(200, 200, 230, 0.04);
+
+    --btn-bg: #4a4a80;
+    --btn-hover: #5c5c96;
+    --btn-text: #e0e0f0;
+    --btn-undo: #3d3d68;
+    --btn-undo-hover: #4e4e7c;
+    --btn-back: #434370;
+    --btn-back-hover: #535380;
+    --btn-size: #3d3d68;
+    --btn-size-text: rgba(220,220,240,0.5);
+    --btn-size-hover: #4a4a80;
+    --btn-size-active: #4a4a80;
+
+    --score-bg: #3d3d68;
+    --score-text: #e0e0f0;
+
+    --timer-bg: #252545;
+    --timer-text: #c0c0d8;
+
+    --kbd-bg: #4a4a80;
+    --kbd-text: #e0e0f0;
+
+    --msg-overlay: rgba(26, 26, 46, 0.82);
+    --msg-text: #d4d4e8;
+    --msg-win-bg: rgba(237, 194, 46, 0.35);
+    --msg-win-text: #f9f6f2;
+
+    --mode-card-bg: #252545;
+    --mode-card-shadow: rgba(0,0,0,0.25);
+    --mode-card-hover-shadow: rgba(0,0,0,0.45);
+
+    --report-overlay-bg: rgba(0, 0, 0, 0.65);
+    --report-modal-bg: #252545;
+    --report-modal-shadow: rgba(0,0,0,0.4);
+    --report-title: #d4d4e8;
+    --report-section-title: #a0a0c0;
+    --report-divider: #3d3d68;
+    --report-stat-bg: #2d2d52;
+    --report-stat-label: #8888aa;
+    --report-stat-value: #d4d4e8;
+    --report-summary-text: #d4d4e8;
+    --report-encourage-bg: #2d2d52;
+    --report-encourage-text: #b0b0d0;
+    --report-suggestion-text: #d4d4e8;
+
+    --toggle-bg: #252545;
+    --toggle-icon: #e8e8f8;
+}
 
 /* ============ 基础 ============ */
 * {
@@ -13,17 +131,49 @@
 
 body {
     font-family: 'Segoe UI', 'PingFang SC', Arial, sans-serif;
-    background: #faf8ef;
+    background: var(--bg);
+    color: var(--text);
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     user-select: none;
+    transition: background var(--transition-speed), color var(--transition-speed);
 }
 
 .container {
     width: 500px;
     max-width: 95vw;
+}
+
+/* ============ 主题切换按钮 ============ */
+.theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 999;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: var(--toggle-bg);
+    color: var(--toggle-icon);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: background var(--transition-speed), transform 0.2s, box-shadow 0.2s;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+}
+
+.theme-toggle:active {
+    transform: scale(0.95);
 }
 
 /* ============ 头部 ============ */
@@ -39,7 +189,8 @@ body {
 .title {
     font-size: 60px;
     font-weight: bold;
-    color: #776e65;
+    color: var(--title-color);
+    transition: color var(--transition-speed);
 }
 
 .scores {
@@ -48,13 +199,13 @@ body {
 }
 
 .score-box {
-    background: #bbada0;
-    color: white;
+    background: var(--score-bg);
+    color: var(--score-text);
     padding: 8px 18px;
     border-radius: 6px;
     text-align: center;
     min-width: 80px;
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s, background var(--transition-speed);
 }
 
 .score-label {
@@ -74,7 +225,7 @@ body {
 }
 
 @keyframes bestGlow {
-    0%, 100% { background: #bbada0; transform: scale(1); }
+    0%, 100% { background: var(--score-bg); transform: scale(1); }
     25%      { background: #edc22e; transform: scale(1.1); }
     50%      { background: #f2b179; transform: scale(1.15); }
     75%      { background: #edc22e; transform: scale(1.1); }
@@ -86,25 +237,27 @@ body {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    background: #eee4da;
+    background: var(--timer-bg);
     border-radius: 8px;
     padding: 10px 20px;
     margin-bottom: 12px;
+    transition: background var(--transition-speed);
 }
 
 .timer-label {
     font-size: 14px;
-    color: #776e65;
+    color: var(--timer-text);
     font-weight: bold;
+    transition: color var(--transition-speed);
 }
 
 .timer-value {
     font-size: 28px;
     font-weight: bold;
-    color: #776e65;
+    color: var(--timer-text);
     font-variant-numeric: tabular-nums;
     letter-spacing: 2px;
-    transition: color 0.3s;
+    transition: color var(--transition-speed);
 }
 
 /* ============ 按钮 ============ */
@@ -115,8 +268,8 @@ body {
 }
 
 .btn {
-    background: #8f7a66;
-    color: white;
+    background: var(--btn-bg);
+    color: var(--btn-text);
     border: none;
     padding: 10px 16px;
     border-radius: 6px;
@@ -126,23 +279,23 @@ body {
     transition: background 0.2s, transform 0.1s;
 }
 
-.btn:hover { background: #9f8a76; }
+.btn:hover { background: var(--btn-hover); }
 .btn:active { transform: scale(0.95); }
 
 .btn-undo {
-    background: #bbada0;
+    background: var(--btn-undo);
 }
 
 .btn-undo:hover {
-    background: #ccbcb0;
+    background: var(--btn-undo-hover);
 }
 
 .btn-back {
-    background: #a08070;
+    background: var(--btn-back);
 }
 
 .btn-back:hover {
-    background: #b09080;
+    background: var(--btn-back-hover);
 }
 
 /* ============ 棋盘大小选择 ============ */
@@ -154,8 +307,8 @@ body {
 }
 
 .size-btn {
-    background: #bbada0;
-    color: rgba(255,255,255,0.6);
+    background: var(--btn-size);
+    color: var(--btn-size-text);
     border: none;
     padding: 6px 16px;
     border-radius: 4px;
@@ -165,29 +318,30 @@ body {
 }
 
 .size-btn:hover {
-    color: white;
-    background: #9f8a76;
+    color: var(--btn-text);
+    background: var(--btn-size-hover);
 }
 
 .size-btn.active {
-    background: #8f7a66;
-    color: white;
+    background: var(--btn-size-active);
+    color: var(--btn-text);
     font-weight: bold;
 }
 
 /* ============ 棋盘 ============ */
 .board {
-    background: #bbada0;
+    background: var(--board-bg);
     border-radius: 10px;
     padding: 15px;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
     position: relative;
+    transition: background var(--transition-speed);
 }
 
 .cell {
-    background: rgba(238, 228, 218, 0.35);
+    background: var(--cell-empty);
     border-radius: 6px;
     aspect-ratio: 1;
     display: flex;
@@ -198,7 +352,7 @@ body {
     transition: all 0.12s ease;
 }
 
-/* ============ 数字颜色 ============ */
+/* ============ 数字颜色（深浅主题共用） ============ */
 .cell-2     { background: #eee4da; color: #776e65; }
 .cell-4     { background: #ede0c8; color: #776e65; }
 .cell-8     { background: #f2b179; color: #f9f6f2; }
@@ -232,23 +386,24 @@ body {
     display: none;
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(238, 228, 218, 0.73);
+    background: var(--msg-overlay);
     border-radius: 10px;
     justify-content: center;
     align-items: center;
     flex-direction: column;
     font-size: 44px;
     font-weight: bold;
-    color: #776e65;
+    color: var(--msg-text);
     z-index: 10;
     text-align: center;
+    transition: background var(--transition-speed), color var(--transition-speed);
 }
 
 .message.show { display: flex; }
 
 .message.win {
-    background: rgba(237, 194, 46, 0.5);
-    color: #f9f6f2;
+    background: var(--msg-win-bg);
+    color: var(--msg-win-text);
 }
 
 .message button {
@@ -256,32 +411,34 @@ body {
     font-size: 17px;
     padding: 10px 28px;
     border: none;
-    background: #8f7a66;
-    color: white;
+    background: var(--btn-bg);
+    color: var(--btn-text);
     border-radius: 6px;
     cursor: pointer;
     transition: background 0.2s;
 }
 
-.message button:hover { background: #9f8a76; }
+.message button:hover { background: var(--btn-hover); }
 
 /* ============ 操作提示 ============ */
 .instructions {
     margin-top: 16px;
-    color: #776e65;
+    color: var(--text);
     text-align: center;
     font-size: 13px;
     line-height: 1.8;
+    transition: color var(--transition-speed);
 }
 
 .instructions kbd {
     display: inline-block;
-    background: #8f7a66;
-    color: #f9f6f2;
+    background: var(--kbd-bg);
+    color: var(--kbd-text);
     padding: 2px 7px;
     border-radius: 4px;
     font-size: 12px;
     margin: 0 2px;
+    transition: background var(--transition-speed), color var(--transition-speed);
 }
 
 /* ============================================
@@ -289,10 +446,11 @@ body {
    ============================================ */
 .mode-title {
     text-align: center;
-    color: #776e65;
+    color: var(--title-color);
     font-size: 28px;
     margin-bottom: 30px;
     margin-top: 10px;
+    transition: color var(--transition-speed);
 }
 
 .mode-cards {
@@ -302,19 +460,19 @@ body {
 }
 
 .mode-card {
-    background: white;
+    background: var(--mode-card-bg);
     border-radius: 14px;
     padding: 24px 28px;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s, background var(--transition-speed);
+    box-shadow: 0 2px 8px var(--mode-card-shadow);
     position: relative;
     overflow: hidden;
 }
 
 .mode-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 6px 20px var(--mode-card-hover-shadow);
 }
 
 .mode-icon {
@@ -325,20 +483,23 @@ body {
 .mode-name {
     font-size: 22px;
     font-weight: bold;
-    color: #776e65;
+    color: var(--text);
     margin-bottom: 6px;
+    transition: color var(--transition-speed);
 }
 
 .mode-desc {
     font-size: 14px;
-    color: #999;
+    color: var(--text-secondary);
     margin-bottom: 4px;
+    transition: color var(--transition-speed);
 }
 
 .mode-goal {
     font-size: 13px;
-    color: #bbada0;
+    color: var(--text-secondary);
     margin-bottom: 14px;
+    transition: color var(--transition-speed);
 }
 
 .mode-btn {
@@ -435,7 +596,7 @@ body.mode-senior .board {
 .report-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.45);
+    background: var(--report-overlay-bg);
     z-index: 1000;
     display: flex;
     justify-content: center;
@@ -449,16 +610,16 @@ body.mode-senior .board {
 }
 
 .report-modal {
-    background: #faf8ef;
+    background: var(--report-modal-bg);
     border-radius: 16px;
     width: 420px;
     max-width: 92vw;
     max-height: 88vh;
     overflow-y: auto;
     padding: 28px 24px 20px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    box-shadow: 0 12px 40px var(--report-modal-shadow);
     transform: translateY(20px);
-    transition: transform 0.25s ease;
+    transition: transform 0.25s ease, background var(--transition-speed);
 }
 
 .report-overlay-show .report-modal {
@@ -478,13 +639,15 @@ body.mode-senior .board {
 .report-title {
     font-size: 24px;
     font-weight: bold;
-    color: #776e65;
+    color: var(--report-title);
+    transition: color var(--transition-speed);
 }
 
 .report-divider {
     height: 1px;
-    background: #d6cdc4;
+    background: var(--report-divider);
     margin: 16px 0;
+    transition: background var(--transition-speed);
 }
 
 .report-section {
@@ -494,8 +657,9 @@ body.mode-senior .board {
 .report-section-title {
     font-size: 15px;
     font-weight: bold;
-    color: #8f7a66;
+    color: var(--report-section-title);
     margin-bottom: 10px;
+    transition: color var(--transition-speed);
 }
 
 /* 数据统计网格 */
@@ -510,23 +674,26 @@ body.mode-senior .board {
 }
 
 .report-stat {
-    background: #eee4da;
+    background: var(--report-stat-bg);
     border-radius: 8px;
     padding: 10px 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: background var(--transition-speed);
 }
 
 .stat-label {
     font-size: 13px;
-    color: #999;
+    color: var(--report-stat-label);
+    transition: color var(--transition-speed);
 }
 
 .stat-value {
     font-size: 18px;
     font-weight: bold;
-    color: #776e65;
+    color: var(--report-stat-value);
+    transition: color var(--transition-speed);
 }
 
 .stat-value.highlight {
@@ -536,10 +703,11 @@ body.mode-senior .board {
 /* 表现总结 */
 .report-summary-item {
     font-size: 14px;
-    color: #776e65;
+    color: var(--report-summary-text);
     line-height: 1.8;
     padding-left: 14px;
     position: relative;
+    transition: color var(--transition-speed);
 }
 
 .report-summary-item::before {
@@ -552,20 +720,22 @@ body.mode-senior .board {
 /* 鼓励 */
 .report-encouragement {
     font-size: 15px;
-    color: #8f7a66;
+    color: var(--report-encourage-text);
     font-weight: bold;
     text-align: center;
     padding: 8px;
-    background: #f9f6f2;
+    background: var(--report-encourage-bg);
     border-radius: 8px;
+    transition: background var(--transition-speed), color var(--transition-speed);
 }
 
 /* 建议 */
 .report-suggestion {
     font-size: 14px;
-    color: #776e65;
+    color: var(--report-suggestion-text);
     line-height: 1.7;
     padding-left: 4px;
+    transition: color var(--transition-speed);
 }
 
 /* 按钮 */
@@ -591,21 +761,21 @@ body.mode-senior .board {
 }
 
 .report-btn-primary {
-    background: #8f7a66;
-    color: white;
+    background: var(--btn-bg);
+    color: var(--btn-text);
 }
 
 .report-btn-primary:hover {
-    background: #9f8a76;
+    background: var(--btn-hover);
 }
 
 .report-btn-secondary {
-    background: #bbada0;
-    color: white;
+    background: var(--btn-undo);
+    color: var(--btn-text);
 }
 
 .report-btn-secondary:hover {
-    background: #ccbcb0;
+    background: var(--btn-undo-hover);
 }
 
 /* 老年模式适配报告 */
@@ -673,4 +843,12 @@ body.mode-senior .report-btn {
     body.mode-senior .cell-128,
     body.mode-senior .cell-256,
     body.mode-senior .cell-512 { font-size: 26px; }
+
+    .theme-toggle {
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        font-size: 17px;
+    }
 }

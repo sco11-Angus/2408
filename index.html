@@ -8,6 +8,9 @@
 </head>
 <body>
 
+    <!-- 深色/浅色模式切换 -->
+    <button class="theme-toggle" id="theme-toggle-btn" aria-label="切换深色模式" title="切换深色/浅色模式">☽</button>
+
     <!-- ========== 模式选择页 ========== -->
     <div class="container" id="mode-selector">
         <!-- 由 modeSelector.js 动态渲染 -->
@@ -63,6 +66,7 @@
     </div>
 
     <!-- JS 模块（按顺序加载） -->
+    <script src="src/theme.js"></script>
     <script src="src/modes.js"></script>
     <script src="src/gameStats.js"></script>
     <script src="src/game.js"></script>
