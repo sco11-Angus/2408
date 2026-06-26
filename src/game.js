@@ -132,26 +132,10 @@ function updateTimerDisplay() {
 }
 
 /**
- * ADHD训练完成回调
+ * ADHD训练完成回调 → 触发训练报告
  */
 function onTrainingComplete() {
-    trainingData.duration = Math.floor((Date.now() - gameStartTime) / 1000);
-    trainingData.score = score;
-    trainingData.maxTile = getMaxTile();
-    trainingData.mode = 'adhd';
-
-    // 弹出训练结束提示
-    const msgHtml = `
-        <div>🏆 训练结束</div>
-        <div style="font-size:18px;font-weight:normal;margin-top:8px;">本次专注训练已完成</div>
-        <div style="font-size:14px;font-weight:normal;margin-top:6px;">
-            最大数字: ${trainingData.maxTile} | 得分: ${trainingData.score}
-        </div>
-        <div style="display:flex;gap:10px;margin-top:15px;">
-            <button onclick="window.game.initBoard(${size}, window.game.getCurrentMode());hideMessage();">重新开始</button>
-            <button onclick="backToModeSelector();hideMessage();">返回首页</button>
-        </div>`;
-    showMessage(msgHtml, true);
+    onGameEnd();
 }
 
 // ============ 核心函数 ============
@@ -183,6 +167,11 @@ function initBoard(newSize = 4, mode = null) {
         duration: 0
     };
     gameStartTime = Date.now();
+
+    // 启动统计数据记录
+    if (typeof GameStats !== 'undefined') {
+        GameStats.start(currentMode.id);
+    }
 
     // ADHD模式启动计时器
     if (currentMode.id === 'adhd' && currentMode.targetTime) {
@@ -391,6 +380,21 @@ function getMaxTile() {
     return max;
 }
 
+// ============ 游戏结束回调 ============
+
+/**
+ * 游戏结束（胜利/失败/ADHD超时）统一回调
+ * 收集统计数据并弹出训练报告
+ */
+function onGameEnd() {
+    stopTimer();
+    if (typeof GameStats === 'undefined' || typeof ReportModal === 'undefined') return;
+
+    const stats = GameStats.finish(score, getMaxTile());
+    ReportModal.show(stats);
+    playBeep(220, 0.3, 'sine');
+}
+
 // ============ 执行移动 ============
 
 /**
@@ -407,6 +411,11 @@ function doMove(dir) {
         case 'down':  moved = moveDown();  break;
     }
     if (moved) {
+        // 记录步数
+        if (typeof GameStats !== 'undefined') {
+            GameStats.recordMove();
+        }
+
         // 检查棋盘是否实际变化，未变化则丢弃快照
         const snap = undoStack[undoStack.length - 1];
         if (snap && snap.board.every((row, r) => row.every((v, c) => v === board[r][c]))) {
@@ -416,15 +425,8 @@ function doMove(dir) {
         spawnTile();
         renderBoard();
         updateScoreDisplay();
-        if (checkWin()) showMessage('🎉 你赢了！', true);
-        else if (checkLose()) {
-            const loseHtml = `
-                <div>😵 游戏结束</div>
-                <div style="font-size:14px;font-weight:normal;margin-top:6px;">
-                    最终得分: ${score}
-                </div>
-                <button onclick="window.game.newGame();hideMessage();">再来一局</button>`;
-            showMessage(loseHtml, false);
+        if (checkWin() || checkLose()) {
+            onGameEnd();
         }
     } else {
         // 无有效移动，丢弃快照
@@ -515,6 +517,7 @@ window.game = {
     getTrainingData,
     updateScoreDisplay,
     stopTimer,
+    onGameEnd,
     get board() { return board; },
     get bestScore() { return bestScore; }
 };
