@@ -5,11 +5,10 @@
 ![Version](https://img.shields.io/badge/version-2.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![CI Status](https://github.com/Yu-717/2408/actions/workflows/quality.yml/badge.svg)
-![Deploy](https://github.com/Yu-717/2408/actions/workflows/deploy.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-90%25-brightgreen)
 ![Node](https://img.shields.io/badge/node-18%20%7C%2020%20%7C%2022-brightgreen)
 
-> 🎮 [在线体验](https://scoll-Angus.github.io/2408/) | 📖 [CI/CD 文档](docs/CI_CD_PIPELINE.md) | 🤖 [AI 审查说明](docs/AI_REVIEW.md)
+> 🎮 [在线体验](https://YYYYY111111.gitlink.org.cn/2408/) | 📖 [CI/CD 文档](docs/CI_CD_PIPELINE.md) | 🤖 [AI 审查说明](docs/AI_REVIEW.md)
 
 经典的数字合并游戏，采用模块化架构，集成 Harness 全自动 CI/CD 流水线和 AI 驱动的代码质量管控。
 
@@ -29,7 +28,7 @@
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/Yu-717/2408.git
+git clone https://www.gitlink.org.cn/YYYYY111111/2408.git
 cd 2408
 
 # 2. 直接在浏览器打开
@@ -123,13 +122,12 @@ npx mocha test/game.test.js
 | 流水线 | 状态 | 说明 |
 |--------|------|------|
 | **Quality Check** | [![quality](https://github.com/Yu-717/2408/actions/workflows/quality.yml/badge.svg)](https://github.com/Yu-717/2408/actions/workflows/quality.yml) | Lint + Test(18/20/22) + Coverage + AI Review |
-| **Deploy** | [![deploy](https://github.com/Yu-717/2408/actions/workflows/deploy.yml/badge.svg)](https://github.com/Yu-717/2408/actions/workflows/deploy.yml) | 自动部署到 GitHub Pages |
 | **Coverage** | 90%+ | 行覆盖率 > 90%，远超 70% 阈值 |
 
-## 🌐 部署地址
+## 🌐 项目地址
 
-- 🎮 **游戏地址**: [https://scoll-Angus.github.io/2408/](https://scoll-Angus.github.io/2408/)
-- 📖 **在线文档**: [https://scoll-Angus.github.io/2408/docs/](https://scoll-Angus.github.io/2408/docs/)
+- 📦 **仓库地址**: [https://www.gitlink.org.cn/YYYYY111111/2408](https://www.gitlink.org.cn/YYYYY111111/2408)
+- 🎮 **在线体验**: 直接下载仓库中的 `index.html`，用浏览器打开即可运行（纯前端，零依赖）
 
 ## 📄 协议
 
