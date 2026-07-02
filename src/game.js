@@ -189,6 +189,8 @@ function initBoard(newSize = 4, mode = null) {
     spawnTile();
     spawnTile();
     renderBoard();
+    // V1.3：重置教练提示计数
+    if (typeof Coach !== 'undefined') Coach.reset();
 }
 
 /**
