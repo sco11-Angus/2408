@@ -77,6 +77,8 @@ function initBoard(newSize = 4) {
     spawnTile();
     spawnTile();
     renderBoard();
+    window.gameStats && window.gameStats.start(size);
+    window.coach    && window.coach.resetCoach();
 }
 
 /**
@@ -282,15 +284,19 @@ function doMove(dir) {
     }
     if (moved) {
         if (lastSnapshot && lastSnapshot.board.every((row, r) => row.every((v, c) => v === board[r][c]))) {
-            lastSnapshot = null; // 移动无效，丢弃快照
+            lastSnapshot = null;
         }
         spawnTile();
         renderBoard();
         updateScoreDisplay();
-        if (checkWin()) showMessage('🎉 你赢了！', true);
-        else if (checkLose()) showMessage('😵 游戏结束', false);
+        window.gameStats && window.gameStats.recordMove();
+        if (checkWin()) {
+            _endGame(true);
+        } else if (checkLose()) {
+            _endGame(false);
+        }
     } else {
-        lastSnapshot = null; // 无有效移动
+        lastSnapshot = null;
     }
 }
 
@@ -331,6 +337,17 @@ function getScore() {
  */
 function getBoardSize() {
     return size;
+}
+
+// ============ 游戏结束处理 ============
+
+function _endGame(isWin) {
+    if (window.gameStats && window.showReport) {
+        const stats = window.gameStats.collect(isWin);
+        window.showReport(stats);
+    } else {
+        showMessage(isWin ? '🎉 你赢了！' : '😵 游戏结束', isWin);
+    }
 }
 
 // ============ 暴露到全局 ============
