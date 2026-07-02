@@ -1,7 +1,7 @@
 /**
  * @file reportModal.js — 训练报告弹窗模块
  * @description 渲染和显示训练报告弹窗，与 game/render 模块解耦
- * @version 1.2.0
+ * @version 1.3.0
  */
 
 const ReportModal = {
@@ -109,6 +109,18 @@ const ReportModal = {
                         '</div>' +
                     '</div>' +
 
+                    // 分割线
+                    '<div class="report-divider"></div>' +
+
+                    // AI 分析（V1.3 新增）
+                    '<div class="report-section">' +
+                        '<div class="report-section-title"><span class="ai-badge">🤖 AI 分析</span></div>' +
+                        '<div id="ai-analysis-content" class="ai-analysis-loading">' +
+                            '<div class="loading-dots"><span></span><span></span><span></span></div>' +
+                            '<span>AI 正在分析中…</span>' +
+                        '</div>' +
+                    '</div>' +
+
                     // 按钮
                     '<div class="report-actions">' +
                         '<button class="report-btn report-btn-primary" onclick="ReportModal.restart()">🔄 重新开始</button>' +
@@ -126,6 +138,40 @@ const ReportModal = {
         requestAnimationFrame(() => {
             overlay.classList.add('report-overlay-show');
         });
+
+        // 异步加载 AI 分析
+        this._loadAIAnalysis(stats);
+    },
+
+    /** 异步调用 AI 并填充分析内容 */
+    async _loadAIAnalysis(stats) {
+        const el = () => document.getElementById('ai-analysis-content');
+        if (!el()) return;
+
+        try {
+            if (!AIService.getApiKey()) {
+                this._showFallback('no_key', stats);
+                return;
+            }
+            const text = await AIService.generateReport(stats);
+            if (!el()) return;
+            el().className = 'ai-analysis-result';
+            el().innerHTML = text.replace(/\n/g, '<br>');
+        } catch (e) {
+            if (!el()) return;
+            this._showFallback(e.message === 'NO_KEY' ? 'no_key' : 'error', stats);
+        }
+    },
+
+    _showFallback(reason, stats) {
+        const el = document.getElementById('ai-analysis-content');
+        if (!el) return;
+        const note = reason === 'no_key'
+            ? `<span class="ai-fallback-note">未设置 API Key，显示基础报告。<a href="#" onclick="event.preventDefault();ApiKeyModal.show()">立即设置</a></span>`
+            : `<span class="ai-fallback-note">AI 服务暂时不可用，显示基础报告。</span>`;
+        const r = window.ReportGenerator.generate(stats);
+        el.className = 'ai-analysis-fallback';
+        el.innerHTML = note + '<p>' + r.summary.join('') + '</p><p class="ai-encourage">' + r.encouragement + '</p><p>' + r.suggestion + '</p>';
     },
 
     /**

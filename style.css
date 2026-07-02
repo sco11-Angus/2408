@@ -852,3 +852,132 @@ body.mode-senior .report-btn {
         font-size: 17px;
     }
 }
+
+/* ============ V1.3 AI 功能样式 ============ */
+
+/* 设置按钮 */
+.btn-settings {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+    line-height: 1;
+    margin-left: 4px;
+}
+.btn-settings:hover { color: var(--text); background: rgba(127,127,127,0.1); }
+
+/* 教练按钮 */
+.btn-coach {
+    background: #5c8fb8;
+    color: #fff;
+}
+.btn-coach:hover    { background: #6fa0c8; }
+.btn-coach:disabled { background: var(--btn-undo); cursor: not-allowed; opacity: 0.7; }
+
+/* 教练提示区 */
+.coach-hint {
+    display: none;
+    background: var(--bg);
+    border-left: 4px solid #5c8fb8;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+    animation: fadeInDown 0.3s ease;
+}
+.coach-hint.active { display: block; }
+.coach-body { display: flex; flex-direction: column; gap: 6px; }
+.coach-loading, .coach-error { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 13px; }
+.coach-error { color: #c0392b; }
+
+/* AI 徽章 */
+.ai-badge {
+    display: inline-block;
+    background: #5c8fb8;
+    color: #fff;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+/* 加载点动画 */
+.loading-dots { display: inline-flex; gap: 4px; align-items: center; }
+.loading-dots span {
+    width: 6px; height: 6px;
+    background: #5c8fb8;
+    border-radius: 50%;
+    animation: dotBounce 1.2s infinite ease-in-out;
+}
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotBounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40%            { transform: scale(1);   opacity: 1;   }
+}
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 报告弹窗 AI 分析区 */
+.ai-analysis-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    padding: 8px 0;
+}
+.ai-analysis-result {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+}
+.ai-analysis-fallback {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.ai-fallback-note {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+.ai-fallback-note a { color: #5c8fb8; text-decoration: none; }
+.ai-fallback-note a:hover { text-decoration: underline; }
+.ai-encourage { color: #5c8fb8; font-style: italic; }
+
+/* API Key 弹窗 */
+.apikey-modal { max-width: 360px; }
+.apikey-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    text-align: center;
+    margin-bottom: 14px;
+}
+.apikey-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--board-bg);
+    border-radius: 6px;
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--text);
+    margin-bottom: 14px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.apikey-input:focus { border-color: #5c8fb8; }

@@ -27,6 +27,7 @@
                     <div class="score-label">最大数字</div>
                     <div class="score-value" id="best">0</div>
                 </div>
+                <button class="btn-settings" onclick="ApiKeyModal.show()" title="AI 设置">⚙</button>
             </div>
         </div>
 
@@ -40,8 +41,12 @@
         <div class="btn-group">
             <button class="btn" onclick="window.game.newGame()">🔄 新游戏</button>
             <button class="btn btn-undo" onclick="window.game.undoMove(); renderBoard();">↩ 撤销</button>
+            <button class="btn btn-coach" id="coach-btn" onclick="Coach.requestHint()">💡 教练提示（5次）</button>
             <button class="btn btn-back" onclick="backToModeSelector()">🏠 返回首页</button>
         </div>
+
+        <!-- 教练提示区 -->
+        <div id="coach-hint" class="coach-hint"></div>
 
         <!-- 棋盘大小选择 -->
         <div class="size-selector">
@@ -69,10 +74,13 @@
     <script src="src/theme.js"></script>
     <script src="src/modes.js"></script>
     <script src="src/gameStats.js"></script>
+    <script src="src/aiService.js"></script>
     <script src="src/game.js"></script>
     <script src="src/reportGenerator.js"></script>
     <script src="src/render.js"></script>
     <script src="src/reportModal.js"></script>
+    <script src="src/apiKeyModal.js"></script>
+    <script src="src/coach.js"></script>
     <script src="src/modeSelector.js"></script>
     <script src="src/input.js"></script>
 
