@@ -63,3 +63,11 @@ document.addEventListener('touchend', (e) => {
         window.game.doMove(dy > 0 ? 'down' : 'up');
     }
 });
+
+if (typeof window !== 'undefined') {
+    window.KEY_MAP = KEY_MAP;
+}
+
+if (typeof module !== 'undefined') {
+    module.exports = { KEY_MAP };
+}

@@ -1,0 +1,155 @@
+name: Quality Check
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ────────────────────────────── 语法检查 ──────────────────────────────
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  # ────────────────────────────── 单元测试 + 覆盖率矩阵 ──────────────────
+  test:
+    name: Test / Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        node: [18, 20, 22]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - name: Run unit tests
+        run: npm test
+      - name: Run coverage quality gate
+        run: npm run test:coverage
+
+  # ────────────────────────────── 覆盖率产物 ────────────────────────────
+  coverage:
+    name: Coverage Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Generate coverage report
+        run: npm run test:coverage
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
+
+  # ────────────────────────────── AI 审查 ───────────────────────────────
+  ai-review:
+    name: AI Review
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Generate AI boundary test suggestions
+        run: npm run ai:tests
+      - name: Run AI code review
+        env:
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          AI_API_BASE_URL: ${{ secrets.AI_API_BASE_URL }}
+          AI_MODEL: ${{ secrets.AI_MODEL }}
+        run: npm run ai:review
+      - name: Upload quality artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-reports
+          path: |
+            reports/
+            tests/ai_generated/
+          retention-days: 90
+
+  # ────────────────────────────── 总成门禁（分支保护用） ────────────────
+  gate:
+    name: Quality Gate
+    if: always()
+    needs: [lint, test, coverage, ai-review]
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Check job results
+        shell: bash
+        run: |
+          failures=0
+
+          echo "::notice::lint  → ${{ needs.lint.result }}"
+          echo "::notice::test  → ${{ needs.test.result }}"
+          echo "::notice::coverage → ${{ needs.coverage.result }}"
+          echo "::notice::ai-review → ${{ needs.ai-review.result }}"
+
+          # lint
+          if [ "${{ needs.lint.result }}" != "success" ]; then
+            echo "❌ lint failed"
+            failures=$((failures+1))
+          fi
+
+          # test matrix — 只要有任何一个矩阵作业失败就算失败
+          if [ "${{ contains(needs.test.result, 'failure') }}" = "true" ] ||
+             [ "${{ contains(needs.test.result, 'cancelled') }}" = "true" ]; then
+            echo "❌ test matrix contains failures"
+            failures=$((failures+1))
+          fi
+
+          # coverage
+          if [ "${{ needs.coverage.result }}" != "success" ]; then
+            echo "❌ coverage failed"
+            failures=$((failures+1))
+          fi
+
+          # ai-review
+          if [ "${{ needs.ai-review.result }}" != "success" ]; then
+            echo "❌ ai-review failed"
+            failures=$((failures+1))
+          fi
+
+          if [ $failures -gt 0 ]; then
+            echo "❌ Quality gate NOT passed ($failures job(s) failed)"
+            exit 1
+          fi
+          echo "✅ Quality gate passed"

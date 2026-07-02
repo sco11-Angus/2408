@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "2048-game",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-p", "3748", "-s", "."],
+      "port": 3748
+    }
+  ]
+}

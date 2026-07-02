@@ -14,5 +14,12 @@ Thumbs.db
 # 日志
 *.log
 
+# 测试与覆盖率产物
+.nyc_output/
+coverage/
+
 # Harness
 .harness/
+
+# 部署产物
+_deploy/

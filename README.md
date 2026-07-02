@@ -56,6 +56,12 @@ game2048/
 ├── test/
 │   └── game.test.js        # 自动化测试（Mocha + Chai）
 ├── .github/                # CI/CD 配置
+│   └── workflows/
+│       ├── quality.yml     # 质量检查（lint + 测试矩阵 + AI审查 + 质量门禁）
+│       └── deploy.yml      # GitHub Pages 自动部署
+├── docs/
+│   ├── CI_CD_PIPELINE.md   # 完整流水线文档 ← ★ 新增
+│   └── ...
 ├── README.md
 └── CONTRIBUTING.md
 ```

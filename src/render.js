@@ -55,3 +55,13 @@ function hideMessage() {
     const el = document.getElementById('message');
     if (el) el.className = 'message';
 }
+
+if (typeof window !== 'undefined') {
+    window.renderBoard = renderBoard;
+    window.showMessage = showMessage;
+    window.hideMessage = hideMessage;
+}
+
+if (typeof module !== 'undefined') {
+    module.exports = { renderBoard, showMessage, hideMessage };
+}

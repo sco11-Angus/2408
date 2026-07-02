@@ -1,0 +1,31 @@
+{
+  "name": "ai-2048-quality",
+  "version": "2.0.0",
+  "description": "AI-2048 quality, testing and AI review tooling.",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "lint": "node scripts/lint-js.js",
+    "test": "mocha \"test/**/*.test.js\"",
+    "test:coverage": "nyc --reporter=text --reporter=html --reporter=lcov --check-coverage --lines 70 --functions 70 --branches 60 npm test",
+    "ai:review": "node scripts/ai_review.js",
+    "ai:tests": "node scripts/ai_generate_tests.js"
+  },
+  "devDependencies": {
+    "chai": "^4.5.0",
+    "jsdom": "^24.1.3",
+    "mocha": "^10.8.2",
+    "nyc": "^17.1.0"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.js"
+    ],
+    "exclude": [
+      "test/**",
+      "scripts/**"
+    ],
+    "all": true,
+    "report-dir": "coverage"
+  }
+}
