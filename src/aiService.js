@@ -11,8 +11,11 @@ const AIService = {
     BASE_URL:    'https://api.minimax.chat/v1',
     MODEL:       'MiniMax-M3',
     STORAGE_KEY: 'minimax_api_key_2048',
+    // 内置默认 Key，用户无需配置即可使用 AI 功能
+    DEFAULT_KEY: 'sk-api-lO-NmM0udvDgxrP-t2q3iQX4RdBD4CmfHNxaEVHddTgSWKhuHtyNW3jX4dFYdIoqHzMWgiAZ7XhaH_PpH7gYLEMAaqr1JJfdON_RvkOXZV2JdFniI2hpjho',
 
-    getApiKey()     { return localStorage.getItem(this.STORAGE_KEY) || ''; },
+    // localStorage 中的 Key 优先；无则使用内置默认 Key
+    getApiKey()     { return localStorage.getItem(this.STORAGE_KEY) || this.DEFAULT_KEY; },
     saveApiKey(key) { localStorage.setItem(this.STORAGE_KEY, key.trim()); },
     clearApiKey()   { localStorage.removeItem(this.STORAGE_KEY); },
 
